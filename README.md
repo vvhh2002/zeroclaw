@@ -86,7 +86,7 @@ Local machine quick benchmark (macOS arm64, Feb 2026) normalized for 0.8GHz edge
 | **Binary Size** | ~28MB (dist) | N/A (Scripts) | ~8MB | **3.4 MB** |
 | **Cost** | Mac Mini $599 | Linux SBC ~$50 | Linux Board $10 | **Any hardware $10** |
 
-> Notes: ZeroClaw results are measured on release builds using `/usr/bin/time -l`. OpenClaw requires Node.js runtime (typically ~390MB additional memory overhead), while NanoBot requires Python runtime. PicoClaw and ZeroClaw are static binaries.
+> Notes: ZeroClaw results are measured on release builds using `/usr/bin/time -l`. OpenClaw requires Node.js runtime (typically ~390MB additional memory overhead), while NanoBot requires Python runtime. PicoClaw and ZeroClaw are static binaries. RAM figures above are **runtime** memory — see [Compilation Requirements](#compilation-requirements) for build-time needs.
 
 <p align="center">
   <img src="zero-claw.jpeg" alt="ZeroClaw vs OpenClaw Comparison" width="800" />
@@ -177,8 +177,29 @@ curl -LsSf https://raw.githubusercontent.com/zeroclaw-labs/zeroclaw/main/scripts
 
 > **Note:** The default `cargo build --release` uses `codegen-units=1` for compatibility with low-memory devices (e.g., Raspberry Pi 3 with 1GB RAM). For faster builds on powerful machines, use `cargo build --profile release-fast`.
 
+#### Compilation Requirements
+
+Building from source requires more resources than running the final binary:
+
+| Resource | Minimum | Recommended |
+|---|---|---|
+| **RAM + swap** | 2 GB | 4 GB+ |
+| **Disk** | 5 GB | 10 GB |
+
+If your device has less than 2 GB RAM, you can add swap space or [download a pre-built binary](#pre-built-binaries) instead. See [troubleshooting](docs/troubleshooting.md#build-fails-with-out-of-memory-oom) for low-RAM build workarounds.
+
 </details>
 
+### Pre-built Binaries
+
+Pre-built binaries for Linux (x86_64, aarch64), macOS (x86_64, aarch64), and Windows (x86_64) are published with each [GitHub Release](https://github.com/zeroclaw-labs/zeroclaw/releases). This is the recommended path for devices that cannot compile from source (e.g., 512 MB–1 GB RAM boards, cheap VPS instances).
+
+```bash
+# Example: download latest release for ARM64 Linux (Raspberry Pi, etc.)
+curl -LO https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-aarch64-unknown-linux-gnu.tar.gz
+tar xzf zeroclaw-aarch64-unknown-linux-gnu.tar.gz
+sudo mv zeroclaw /usr/local/bin/
+```
 
 ## Quick Start
 

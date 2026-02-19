@@ -32,6 +32,56 @@ Fix:
 ./bootstrap.sh --install-system-deps
 ```
 
+### Build fails with out-of-memory (OOM)
+
+Symptoms:
+
+- `cargo build --release` is killed by the OS (signal 9 / OOM killer)
+- system becomes unresponsive during compilation
+- error messages mentioning `cannot allocate memory`
+
+Why this happens:
+
+- Compiling ZeroClaw from source requires approximately **2 GB of RAM + swap** (minimum).
+- The Rust compiler and linker (especially with LTO) are memory-intensive.
+- Heavy dependency trees (`matrix-sdk`, `reqwest`, crypto stacks) add to peak memory.
+- The runtime binary uses < 5 MB, but compilation needs significantly more.
+
+Workarounds (try in order):
+
+1. **Add swap space** (recommended for devices with 1 GB RAM):
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+# Then retry: cargo build --release --locked
+```
+
+2. **Limit parallel compilation** to reduce peak memory:
+
+```bash
+CARGO_BUILD_JOBS=1 cargo build --release --locked
+```
+
+3. **Skip heavy optional features** (Matrix E2EE stack is the largest dependency):
+
+```bash
+cargo build --release --locked --no-default-features --features hardware
+```
+
+4. **Cross-compile from a more powerful machine:**
+
+```bash
+# On a build machine (targeting Raspberry Pi / ARM64 Linux):
+rustup target add aarch64-unknown-linux-gnu
+cargo build --release --locked --target aarch64-unknown-linux-gnu
+# Then copy target/aarch64-unknown-linux-gnu/release/zeroclaw to the device
+```
+
+5. **Download a pre-built binary** from [GitHub Releases](https://github.com/zeroclaw-labs/zeroclaw/releases) instead of compiling on the device.
+
 ### Build is very slow or appears stuck
 
 Symptoms:

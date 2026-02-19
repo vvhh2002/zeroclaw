@@ -27,6 +27,9 @@ jobs:
                     - os: ubuntu-latest
                       target: x86_64-unknown-linux-gnu
                       artifact: zeroclaw
+                    - os: ubuntu-latest
+                      target: aarch64-unknown-linux-gnu
+                      artifact: zeroclaw
                     - os: macos-latest
                       target: x86_64-apple-darwin
                       artifact: zeroclaw
@@ -46,8 +49,16 @@ jobs:
 
             - uses: useblacksmith/rust-cache@f53e7f127245d2a269b3d90879ccf259876842d5 # v3
 
+            - name: Install cross-compilation toolchain (aarch64)
+              if: matrix.target == 'aarch64-unknown-linux-gnu'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y gcc-aarch64-linux-gnu
+
             - name: Build release
               run: cargo build --release --locked --target ${{ matrix.target }}
+              env:
+                  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
             - name: Check binary size (Unix)
               if: runner.os != 'Windows'
